@@ -6,17 +6,33 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbDir = path.resolve(__dirname, '../../data');
+const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const dbDir = isVercel ? '/tmp/vyaparx-data' : path.resolve(__dirname, '../../data');
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
 const dbPath = path.join(dbDir, 'vyaparx.db');
+
+// If on Vercel and /tmp database does not exist yet, copy bundled database if available
+const bundledDbPath = path.resolve(__dirname, '../../data/vyaparx.db');
+if (isVercel && !fs.existsSync(dbPath) && fs.existsSync(bundledDbPath)) {
+  try {
+    fs.copyFileSync(bundledDbPath, dbPath);
+  } catch (copyErr) {
+    console.warn('Notice: Could not copy bundled database file:', copyErr.message);
+  }
+}
+
 const db = new DatabaseSync(dbPath);
 
-// Enable foreign keys and WAL mode for reliability
+// Enable foreign keys and appropriate journal mode for reliability
 db.exec('PRAGMA foreign_keys = ON;');
-db.exec('PRAGMA journal_mode = WAL;');
+if (!isVercel) {
+  db.exec('PRAGMA journal_mode = WAL;');
+} else {
+  db.exec('PRAGMA journal_mode = MEMORY;');
+}
 
 // Initialize schema
 const schemaPath = path.join(__dirname, 'schema.sql');

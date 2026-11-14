@@ -19,32 +19,35 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
-// Safe universal fetch with automatic cross-port fallback
+// Safe universal fetch with automatic cross-port fallback for local dev
 const _nativeFetch = (typeof window !== 'undefined' ? window.fetch.bind(window) : globalThis.fetch);
 const fetch = async (url, options = {}) => {
   try {
     const res = await _nativeFetch(url, options);
-    // If the relative URL returned 404 (e.g. Vite dev or preview didn't proxy /api),
-    // automatically retry directly against backend on port 5000!
-    if (res.status === 404 && typeof url === 'string') {
-      const hostname = (typeof window !== 'undefined' && window.location.hostname) || '127.0.0.1';
-      if (url.startsWith('/api/')) {
-        const directUrl = `http://${hostname}:5000${url}`;
-        const directRes = await _nativeFetch(directUrl, options);
-        if (directRes.status !== 404) return directRes;
-      } else if (url.startsWith('/')) {
-        const directUrl = `http://${hostname}:5000/api${url}`;
-        const directRes = await _nativeFetch(directUrl, options);
-        if (directRes.status !== 404) return directRes;
+    // If running locally (localhost/127.0.0.1) and relative URL returned 404 (e.g. Vite dev or preview without proxy),
+    // automatically retry directly against Express backend on port 5000
+    if (res.status === 404 && typeof window !== 'undefined') {
+      const isLocalhost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+      if (isLocalhost && typeof url === 'string') {
+        if (url.startsWith('/api/')) {
+          const directUrl = `http://127.0.0.1:5000${url}`;
+          const directRes = await _nativeFetch(directUrl, options);
+          if (directRes.status !== 404) return directRes;
+        } else if (url.startsWith('/')) {
+          const directUrl = `http://127.0.0.1:5000/api${url}`;
+          const directRes = await _nativeFetch(directUrl, options);
+          if (directRes.status !== 404) return directRes;
+        }
       }
     }
     return res;
   } catch (netErr) {
-    // If connection to relative or proxy failed, retry directly against backend port 5000
-    if (typeof url === 'string' && url.startsWith('/api/')) {
-      const hostname = (typeof window !== 'undefined' && window.location.hostname) || '127.0.0.1';
-      const directUrl = `http://${hostname}:5000${url}`;
-      return _nativeFetch(directUrl, options);
+    if (typeof window !== 'undefined') {
+      const isLocalhost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+      if (isLocalhost && typeof url === 'string' && url.startsWith('/api/')) {
+        const directUrl = `http://127.0.0.1:5000${url}`;
+        return _nativeFetch(directUrl, options);
+      }
     }
     throw netErr;
   }

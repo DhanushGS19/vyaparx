@@ -126,7 +126,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = config.port;
-if (process.env.NODE_ENV !== 'test') {
+const isDirectRun = process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('server/index.js');
+if (isDirectRun && process.env.NODE_ENV !== 'test') {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`=======================================================`);
     console.log(`🚀 VyaparX Backend Server running on http://localhost:${PORT}`);
