@@ -1335,13 +1335,15 @@ export const seedDatabase = async () => {
   db.exec('PRAGMA foreign_keys = ON;');
 };
 
-seedDatabase()
-  .then(() => {
-    console.log('🚀 Ready to start server.');
-    process.exit(0);
-  })
-  .catch(err => {
-    console.error('❌ Seed error:', err);
-    process.exit(1);
-  });
+if (process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('server/db/seed.js')) {
+  seedDatabase()
+    .then(() => {
+      console.log('🚀 Ready to start server.');
+      process.exit(0);
+    })
+    .catch(err => {
+      console.error('❌ Seed error:', err);
+      process.exit(1);
+    });
+}
 

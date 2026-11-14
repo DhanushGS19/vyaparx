@@ -273,12 +273,25 @@ export const ModernLoginPage = () => {
               {/* -------------------- LOGIN FORM -------------------- */}
               {mode === 'LOGIN' && (
                 <form onSubmit={handleLoginSubmit} className="space-y-3 sm:space-y-4">
+                  {/* Quick Credentials Info Box */}
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[10px] sm:text-[11px] text-slate-300 flex items-center justify-between">
+                    <div className="truncate pr-1">
+                      <span className="font-bold text-slate-400">Demo User: </span>
+                      <span className="font-mono text-white font-semibold">
+                        {isEnterprise ? 'enterprise@apex.com' : 'retailer@krishna.com'}
+                      </span>
+                    </div>
+                    <span className="font-mono text-emerald-400 font-bold flex-shrink-0">
+                      Pass: password123
+                    </span>
+                  </div>
+
                   <div>
                     <label className="block text-[11px] sm:text-xs font-bold text-slate-300 mb-1">Registered Email</label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
-                        type="email"
+                        type="text"
                         required
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
@@ -378,10 +391,10 @@ export const ModernLoginPage = () => {
                           <button
                             type="button"
                             disabled={loading}
-                            onClick={() => handleQuickDemo('RETAILER', 'retailer@omsai.com')}
+                            onClick={() => handleQuickDemo('RETAILER', 'retailer@gupta.com')}
                             className="py-1.5 sm:py-2 px-2 sm:px-2.5 rounded-xl bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-800/60 text-[10px] sm:text-[11px] text-emerald-300 font-semibold transition-all flex items-center justify-between cursor-pointer truncate shadow-xs"
                           >
-                            <span className="truncate">Om Sai Store</span>
+                            <span className="truncate">Gupta Kirana</span>
                             <span className="text-[10px] text-emerald-400 font-mono ml-1">→</span>
                           </button>
                         </>
