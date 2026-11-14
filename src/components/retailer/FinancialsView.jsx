@@ -154,25 +154,25 @@ export const FinancialsView = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           title="Total Lifetime Purchases"
-          value={`₹${summary.total_purchases?.toLocaleString('en-IN')}`}
+          value={`₹${(summary.total_purchases || 0).toLocaleString('en-IN')}`}
           icon={Receipt}
           color="slate"
         />
         <StatCard
           title="Total Payments Remitted"
-          value={`₹${summary.total_payments_made?.toLocaleString('en-IN')}`}
+          value={`₹${(summary.total_payments_made || 0).toLocaleString('en-IN')}`}
           icon={CheckCircle}
           color="emerald"
         />
         <StatCard
           title="Outstanding Balances"
-          value={`₹${summary.total_outstanding_dues?.toLocaleString('en-IN')}`}
+          value={`₹${(summary.total_outstanding_dues || 0).toLocaleString('en-IN')}`}
           icon={AlertCircle}
           color={summary.overdue_payments > 0 ? 'rose' : 'amber'}
         />
         <StatCard
           title="Overdue Dues"
-          value={`₹${summary.overdue_payments?.toLocaleString('en-IN')}`}
+          value={`₹${(summary.overdue_payments || 0).toLocaleString('en-IN')}`}
           icon={Clock}
           color="rose"
           subvalue="Past agreed settlement due date"

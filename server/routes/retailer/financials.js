@@ -60,7 +60,7 @@ router.get('/', (req, res) => {
     `, [retailerId]);
 
     const suppliers = queryAll(`
-      SELECT DISTINCT e.id, e.company_name, e.phone, e.city, e.state, e.bank_name, e.account_number, e.ifsc_code, e.upi_id
+      SELECT DISTINCT e.id, e.company_name, e.phone, e.city, e.state, e.bank_name, e.account_number, e.ifsc_code
       FROM enterprise_profiles e
       WHERE e.id IN (
         SELECT enterprise_id FROM invoices WHERE retailer_id = ?
