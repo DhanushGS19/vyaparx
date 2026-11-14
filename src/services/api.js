@@ -3,7 +3,52 @@
  * Manages HTTP communication with Express backend, JWT token injection, and structured error handling.
  */
 
-const BASE_URL = '/api';
+// Smart Backend URL Resolver:
+// 1. If served directly from Express on port 5000: relative '/api'
+// 2. If served from Vite (5173 / 4173) or any other port:
+//    tries relative '/api' via proxy first, with automatic fallback directly to backend port 5000!
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    if (window.location.protocol === 'file:') {
+      return 'http://127.0.0.1:5000/api';
+    }
+    return '/api';
+  }
+  return 'http://127.0.0.1:5000/api';
+};
+
+const BASE_URL = getBaseUrl();
+
+// Safe universal fetch with automatic cross-port fallback
+const _nativeFetch = (typeof window !== 'undefined' ? window.fetch.bind(window) : globalThis.fetch);
+const fetch = async (url, options = {}) => {
+  try {
+    const res = await _nativeFetch(url, options);
+    // If the relative URL returned 404 (e.g. Vite dev or preview didn't proxy /api),
+    // automatically retry directly against backend on port 5000!
+    if (res.status === 404 && typeof url === 'string') {
+      const hostname = (typeof window !== 'undefined' && window.location.hostname) || '127.0.0.1';
+      if (url.startsWith('/api/')) {
+        const directUrl = `http://${hostname}:5000${url}`;
+        const directRes = await _nativeFetch(directUrl, options);
+        if (directRes.status !== 404) return directRes;
+      } else if (url.startsWith('/')) {
+        const directUrl = `http://${hostname}:5000/api${url}`;
+        const directRes = await _nativeFetch(directUrl, options);
+        if (directRes.status !== 404) return directRes;
+      }
+    }
+    return res;
+  } catch (netErr) {
+    // If connection to relative or proxy failed, retry directly against backend port 5000
+    if (typeof url === 'string' && url.startsWith('/api/')) {
+      const hostname = (typeof window !== 'undefined' && window.location.hostname) || '127.0.0.1';
+      const directUrl = `http://${hostname}:5000${url}`;
+      return _nativeFetch(directUrl, options);
+    }
+    throw netErr;
+  }
+};
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('vyaparx_token');

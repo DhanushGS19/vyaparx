@@ -79,6 +79,7 @@ app.get('/api/health', (req, res) => {
 
 // Common Routes
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 // Enterprise Portal API Routes (strictly guarded by requireEnterprise)
