@@ -14,15 +14,20 @@ const getAuthHeaders = () => {
 };
 
 const handleResponse = async (response) => {
-  const data = await response.json().catch(() => ({}));
+  let data;
+  try {
+    data = await response.json();
+  } catch (e) {
+    data = {};
+  }
   if (!response.ok) {
     if (response.status === 401) {
       localStorage.removeItem('vyaparx_token');
       localStorage.removeItem('vyaparx_user');
       localStorage.removeItem('vyaparx_role');
-      // If unauthorized, notify or redirect
     }
-    const error = new Error(data.message || data.error || 'Request failed');
+    const message = data.message || data.error || (response.status === 404 ? 'API route not found (404)' : `Server returned HTTP ${response.status}`);
+    const error = new Error(message);
     error.status = response.status;
     error.code = data.code;
     error.data = data;

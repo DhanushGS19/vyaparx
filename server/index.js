@@ -57,6 +57,16 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Request Logger
+app.use((req, res, next) => {
+  const start = Date.now();
+  console.log(`📡 [${req.method}] ${req.url} from ${req.ip}`);
+  res.on('finish', () => {
+    console.log(`🏁 [${req.method}] ${req.url} -> ${res.statusCode} (${Date.now() - start}ms)`);
+  });
+  next();
+});
+
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({
@@ -116,7 +126,7 @@ app.use((err, req, res, next) => {
 
 const PORT = config.port;
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`=======================================================`);
     console.log(`🚀 VyaparX Backend Server running on http://localhost:${PORT}`);
     console.log(`📦 Enterprise & Retailer APIs active with strict RBAC.`);
